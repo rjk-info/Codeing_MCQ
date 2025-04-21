@@ -1,456 +1,331 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import "./App.css";
-
-function debounce(func, wait) {
-  let timeout;
-  return function (...args) {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(this, args), wait);
-  };
-}
+import axios from "axios";
 
 function App() {
-  const [filters, setFilters] = useState({
-    language: "javascript",
-    difficulty: "all",
-    category: "all",
-    questionType: "all",
-  });
-  const [numQuestions, setNumQuestions] = useState(5);
-  const [quizQuestions, setQuizQuestions] = useState([]);
+  const [questions, setQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showScore, setShowScore] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
-  const [feedback, setFeedback] = useState("");
-  const [quizStarted, setQuizStarted] = useState(false);
-  const [correctCount, setCorrectCount] = useState(0);
-  const [isOptionSelected, setIsOptionSelected] = useState(false);
+  const [isAnswered, setIsAnswered] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [emptyState, setEmptyState] = useState(false);
-  const [language, setLanguage] = useState("en"); // Default language is English
+  const [quizSettings, setQuizSettings] = useState({
+    numberOfQuestions: 5,
+    language: "javascript",
+    difficulty: "medium"
+  });
+  const [showSettings, setShowSettings] = useState(true);
+  // Timer states
+  const [timeLeft, setTimeLeft] = useState(60); // 60 seconds = 1 minute
+  const [timerActive, setTimerActive] = useState(false);
+  const [timerExpired, setTimerExpired] = useState(false);
 
-  const currentQuestion = quizQuestions[currentQuestionIndex];
-
-  // Map programming languages to Trivia API categories
-  const categoryMap = {
-    javascript: 18, // Science: Computers
-    python: 18,    // Science: Computers
-    java: 18,      // Science: Computers
-    csharp: 18,    // Science: Computers
-    ruby: 18,      // Science: Computers
-    php: 18,       // Science: Computers
-    swift: 18,     // Science: Computers
-    kotlin: 18,    // Science: Computers
-    go: 18,        // Science: Computers
-    rust: 18,      // Science: Computers
-  };
-
-  const difficultyMap = {
-    all: "",
-    easy: "easy",
-    medium: "medium",
-    hard: "hard",
-  };
-
-  const buildApiUrl = () => {
-    const categoryId = categoryMap[filters.language];
-    if (!categoryId) {
-      throw new Error("Selected language is not supported");
+  // Timer effect
+  useEffect(() => {
+    let interval = null;
+    if (timerActive && timeLeft > 0 && !isAnswered && !showScore) {
+      interval = setInterval(() => {
+        setTimeLeft(timeLeft - 1);
+      }, 1000);
+    } else if (timeLeft === 0 && !isAnswered) {
+      setTimerExpired(true);
+      setIsAnswered(true);
+      clearInterval(interval);
     }
-    
-    // Base URL with required parameters
-    let url = `https://opentdb.com/api.php?amount=${numQuestions}&category=${categoryId}`;
+    return () => clearInterval(interval);
+  }, [timerActive, timeLeft, isAnswered, showScore]);
 
-    // Add difficulty if selected
-    if (filters.difficulty !== "all") {
-      url += `&difficulty=${difficultyMap[filters.difficulty]}`;
+  // Reset timer when moving to next question
+  useEffect(() => {
+    if (!showSettings && !showScore) {
+      setTimeLeft(60);
+      setTimerActive(true);
+      setTimerExpired(false);
     }
-    
-    // Add type if selected
-    if (filters.questionType !== "all") {
-      url += `&type=${filters.questionType === "multiple" ? "multiple" : "boolean"}`;
-    }
-    
-    console.log("API URL:", url);
-    return url;
-  };
+  }, [currentQuestionIndex, showSettings, showScore]);
 
-  const shuffleArray = (array) => {
-    const arr = [...array];
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-  };
-
-  const decodeHtml = (html) => {
-    const txt = document.createElement("textarea");
-    txt.innerHTML = html;
-    return txt.value;
-  };
-
-  const fetchQuestionsFromApi = async () => {
-    try {
-      const url = buildApiUrl();
-      console.log("Fetching from API URL:", url);
-      
-      const response = await fetch(url);
-      
-      if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log("API Response:", data);
-      
-      if (data.response_code !== 0) {
-        throw new Error(`API Error: ${data.response_code}`);
-      }
-      
-      if (!data.results || data.results.length === 0) {
-        throw new Error(`No questions found for ${filters.language}. Try a different language or category.`);
-      }
-
-      const mappedQuestions = data.results.map((item, index) => {
-        const options = [
-          { id: 1, text: decodeHtml(item.correct_answer), isCorrect: true },
-          ...item.incorrect_answers.map((answer, i) => ({
-            id: i + 2,
-            text: decodeHtml(answer),
-            isCorrect: false
-          }))
-        ];
-
-        return {
-          question: decodeHtml(item.question),
-          options: shuffleArray(options),
-        };
-      });
-
-      return mappedQuestions;
-    } catch (error) {
-      console.error("API Error:", error);
-      setErrorMessage(error.message);
-      throw error;
-    }
-  };
-
-  const fetchQuestions = async () => {
-    try {
-      console.log("Attempting to fetch questions from API...");
-      const apiQuestions = await fetchQuestionsFromApi();
-      console.log(`Successfully fetched ${apiQuestions.length} questions from API`);
-      
-      if (apiQuestions.length === 0) {
-        setEmptyState(true);
-        throw new Error(`No questions found for ${filters.language}. Try a different language or category.`);
-      }
-      
-      setEmptyState(false);
-      return apiQuestions;
-    } catch (error) {
-      console.error("Error fetching from API:", error);
-      setEmptyState(true);
-      throw error;
-    }
-  };
-
-  const handleStartQuiz = () => {
-    setQuizStarted(true);
-    setIsLoading(true);
-    setErrorMessage("");
-    
-    fetchQuestions()
-      .then(questions => {
-        if (questions.length === 0) {
-          setErrorMessage("No questions found for current filters.");
-          setQuizQuestions([]);
-          setQuizStarted(false);
-          return;
-        }
-        setQuizQuestions(shuffleArray(questions));
-        setCurrentQuestionIndex(0);
-        setSelectedOption(null);
-        setFeedback("");
-        setCorrectCount(0);
-        setIsOptionSelected(false);
-      })
-      .catch(error => {
-        console.error("Error in handleStartQuiz:", error);
-        setErrorMessage(error.message);
-        setQuizStarted(false);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  };
-
-  const handleOptionClick = useCallback(
-    (option) => {
-      if (isOptionSelected) return;
-      setIsOptionSelected(true);
-      setSelectedOption(option.id);
-      setFeedback(option.isCorrect ? "Correct! 🎉" : "Wrong! ❌");
-      if (option.isCorrect) setCorrectCount((prev) => prev + 1);
-    },
-    [isOptionSelected]
-  );
-
-  const resetQuestionState = useCallback(() => {
-    setSelectedOption(null);
-    setFeedback("");
-    setIsOptionSelected(false);
-  }, []);
-
-  const handleNextQuestion = useCallback(() => {
-    if (currentQuestionIndex + 1 < quizQuestions.length) {
-      setCurrentQuestionIndex((prev) => prev + 1);
-      resetQuestionState();
-    }
-  }, [currentQuestionIndex, quizQuestions.length, resetQuestionState]);
-
-  const handlePreviousQuestion = useCallback(() => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex((prev) => prev - 1);
-      resetQuestionState();
-    }
-  }, [currentQuestionIndex, resetQuestionState]);
-
-  const resetQuiz = useCallback(() => {
-    setQuizStarted(false);
-    setErrorMessage("");
-    setEmptyState(false);
-  }, []);
-
-  const handleFilterChange = (filterType, value) => {
-    setFilters((prev) => ({
+  const handleSettingsChange = (e) => {
+    const { name, value } = e.target;
+    setQuizSettings(prev => ({
       ...prev,
-      [filterType]: value,
+      [name]: name === 'numberOfQuestions' ? parseInt(value, 10) : value
     }));
   };
 
-  const handleLanguageChange = (e) => {
-    setLanguage(e.target.value);
+  const startQuiz = () => {
+    setShowSettings(false);
+    loadQuestions();
   };
 
-  // Luggage icon SVG
+  const loadQuestions = async () => {
+    setIsLoading(true);
+    try {
+      const response = await axios.get("https://quizapi.io/api/v1/questions", {
+        params: {
+          category: quizSettings.language,
+          limit: quizSettings.numberOfQuestions,
+          difficulty: quizSettings.difficulty,
+        },
+        headers: {
+          "X-RapidAPI-Key": "38193c3e75mshf11ad3508735799p1f18e2jsn83d47d06541b",
+          "X-RapidAPI-Host": "quizapi.io"
+        },
+      });
+
+      const formattedQuestions = response.data.map((q, index) => {
+        const options = Object.entries(q.answers)
+          .filter(([key, value]) => value !== null)
+          .map(([key, text], i) => ({
+            id: i + 1,
+            text,
+            isCorrect: q.correct_answers[`${key}_correct`] === "true"
+          }));
+
+        return {
+          id: index + 1,
+          question: q.question,
+          options,
+        };
+      });
+
+      setQuestions(formattedQuestions);
+      setCurrentQuestionIndex(0);
+      setSelectedOption(null);
+      setIsAnswered(false);
+    } catch (error) {
+      console.error("Error fetching questions:", error);
+      alert("Failed to load questions from RapidAPI. Try again later.");
+      setShowSettings(true);
+    }
+    setIsLoading(false);
+  };
+
+  const handleAnswerClick = (optionId) => {
+    if (isAnswered) return;
+    setSelectedOption(optionId);
+    setIsAnswered(true);
+    setTimerActive(false);
+    const currentQuestion = questions[currentQuestionIndex];
+    const selectedOptionObj = currentQuestion.options.find(
+      (opt) => opt.id === optionId
+    );
+    if (selectedOptionObj.isCorrect) {
+      setScore(score + 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setSelectedOption(null);
+      setIsAnswered(false);
+    } else {
+      setShowScore(true);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
+      setSelectedOption(null);
+      setIsAnswered(false);
+    }
+  };
+
+  const handleRestart = () => {
+    setCurrentQuestionIndex(0);
+    setScore(0);
+    setShowScore(false);
+    setSelectedOption(null);
+    setIsAnswered(false);
+    setShowSettings(true);
+    setTimeLeft(60);
+    setTimerActive(false);
+    setTimerExpired(false);
+  };
+
   const LuggageIcon = () => (
-    <svg 
-      xmlns="http://www.w3.org/2000/svg" 
-      viewBox="0 0 24 24" 
-      width="24" 
+    <svg
+      width="24"
       height="24"
-      fill="currentColor"
-      className="luggage-icon"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
     >
-      <path d="M17 6h-2V3c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v3H7c-.55 0-1 .45-1 1v11c0 .55.45 1 1 1h10c.55 0 1-.45 1-1V7c0-.55-.45-1-1-1zM9 3h6v3H9V3zm8 14H7V7h10v10z"/>
-      <path d="M12 12c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+      <path
+        d="M19 6.5H17V3.5C17 2.95 16.55 2.5 16 2.5H8C7.45 2.5 7 2.95 7 3.5V6.5H5C3.9 6.5 3 7.4 3 8.5V19.5C3 20.6 3.9 21.5 5 21.5H19C20.1 21.5 21 20.6 21 19.5V8.5C21 7.4 20.1 6.5 19 6.5ZM9 3.5H15V6.5H9V3.5ZM19 19.5H5V8.5H19V19.5Z"
+        fill="currentColor"
+      />
+      <path
+        d="M12 17.5C13.66 17.5 15 16.16 15 14.5C15 12.84 13.66 11.5 12 11.5C10.34 11.5 9 12.84 9 14.5C9 16.16 10.34 17.5 12 17.5Z"
+        fill="currentColor"
+      />
     </svg>
   );
 
+  // Format time as MM:SS
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+  };
+
   return (
-    <div className="quiz-container" role="main">
-      <header className="quiz-header">
-        <div className="logo-container">
-          <LuggageIcon />
-          <h1>Code Quiz</h1>
-        </div>
-        <div className="language-selector">
-          <label htmlFor="language">Language: </label>
-          <select 
-            id="language" 
-            value={language} 
-            onChange={handleLanguageChange}
-            aria-label="Select interface language"
-          >
-            <option value="en">English</option>
-            <option value="es">Español</option>
-            <option value="fr">Français</option>
-            <option value="de">Deutsch</option>
-          </select>
+    <div className="app">
+      <header className="app-header">
+        <div className="header-content">
+          <div className="logo-container">
+            <LuggageIcon />
+            <h1>Code Quiz</h1>
+          </div>
         </div>
       </header>
 
-      {!quizStarted ? (
-        <div className="start-screen">
-          <h2>Welcome to Code Quiz</h2>
-          <p>Test your programming knowledge with our interactive quiz!</p>
-          
-          {errorMessage && <div className="error-message" role="alert">{errorMessage}</div>}
-          {emptyState && <div className="empty-state">No questions found for current filters.</div>}
-          
-          <div className="quiz-settings">
-            <div className="input-group">
-              <label htmlFor="numQuestions">Number of Questions (1-50):</label>
-              <input
-                type="number"
-                id="numQuestions"
-                min="1"
-                max="50"
-                value={numQuestions}
-                onChange={(e) => {
-                  const value = Math.min(50, Math.max(1, Number(e.target.value) || 1));
-                  setNumQuestions(value);
-                }}
-                aria-label="Number of questions"
-                disabled={isLoading}
-              />
-            </div>
-            
-            <div className="input-group">
-              <label htmlFor="languageSelect">Select Programming Language:</label>
-              <select
-                id="languageSelect"
-                value={filters.language}
-                onChange={(e) => handleFilterChange("language", e.target.value)}
-                aria-label="Select programming language"
-                className="language-dropdown"
-                disabled={isLoading}
-              >
-                <option value="javascript">JavaScript</option>
-                <option value="python">Python</option>
-                <option value="java">Java</option>
-                <option value="csharp">C#</option>
-                <option value="ruby">Ruby</option>
-                <option value="php">PHP</option>
-                <option value="swift">Swift</option>
-                <option value="kotlin">Kotlin</option>
-                <option value="go">Go</option>
-                <option value="rust">Rust</option>
-              </select>
-            </div>
-            
-            <div className="input-group">
-              <label htmlFor="difficultySelect">Select Difficulty:</label>
-              <select
-                id="difficultySelect"
-                value={filters.difficulty}
-                onChange={(e) => handleFilterChange("difficulty", e.target.value)}
-                aria-label="Select difficulty"
-                className="difficulty-dropdown"
-                disabled={isLoading}
-              >
-                <option value="all">All</option>
-                <option value="easy">Easy</option>
-                <option value="medium">Medium</option>
-                <option value="hard">Hard</option>
-              </select>
-            </div>
-            
-            <div className="input-group">
-              <label htmlFor="questionTypeSelect">Select Question Type:</label>
-              <select
-                id="questionTypeSelect"
-                value={filters.questionType}
-                onChange={(e) => handleFilterChange("questionType", e.target.value)}
-                aria-label="Select question type"
-                className="questiontype-dropdown"
-                disabled={isLoading}
-              >
-                <option value="all">All</option>
-                <option value="multiple">Multiple Choice</option>
-                <option value="true_false">True / False</option>
-              </select>
-            </div>
-          </div>
-          
-          <button
-            onClick={handleStartQuiz}
-            className="start-btn"
-            aria-label="Start quiz"
-            disabled={isLoading}
-          >
-            {isLoading ? "Loading..." : "Start Quiz"}
-          </button>
-        </div>
-      ) : (
-        <div className="quiz-content">
-          <div className="quiz-progress">
-            <div className="progress-bar">
-              <div 
-                className="progress-fill" 
-                style={{ width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%` }}
-              ></div>
-            </div>
-            <div className="question-counter">
-              Question <span className="current">{currentQuestionIndex + 1}</span> of <span className="total">{quizQuestions.length}</span>
-            </div>
-          </div>
-
-          <div className="quiz-question-container">
-            <h2 className="quiz-question" tabIndex="0">
-              {currentQuestion?.question}
-            </h2>
-
-            <ul className="quiz-options" role="list">
-              {currentQuestion?.options.map((option) => (
-                <li
-                  key={option.id}
-                  className={`quiz-option
-                    ${selectedOption === option.id ?
-                      (option.isCorrect ? "correct" : "wrong") : ""}
-                    ${isOptionSelected ? "disabled" : ""}`}
-                  onClick={() => handleOptionClick(option)}
-                  onKeyDown={(e) => e.key === "Enter" && handleOptionClick(option)}
-                  role="button"
-                  tabIndex="0"
-                  aria-pressed={selectedOption === option.id}
-                  aria-disabled={isOptionSelected}
+      <main className="app-main">
+        {showSettings ? (
+          <div className="start-screen">
+            <h2>Welcome to Code Quiz!</h2>
+            <p>Test your programming knowledge with our interactive quiz.</p>
+            <div className="quiz-settings">
+              <div className="setting-item">
+                <label htmlFor="numberOfQuestions">Number of Questions:</label>
+                <select
+                  id="numberOfQuestions"
+                  name="numberOfQuestions"
+                  value={quizSettings.numberOfQuestions}
+                  onChange={handleSettingsChange}
+                  className="language-select"
                 >
-                  {option.text}
-                </li>
-              ))}
-            </ul>
-
-            {feedback && (
-              <div className={`quiz-feedback ${feedback.includes("🎉") ? "correct" : "wrong"}`} role="alert">
-                {feedback}
+                  <option value="5">5 Questions</option>
+                  <option value="10">10 Questions</option>
+                  <option value="15">15 Questions</option>
+                  <option value="20">20 Questions</option>
+                </select>
               </div>
-            )}
+              <div className="setting-item">
+                <label htmlFor="language">Programming Language:</label>
+                <select
+                  id="language"
+                  name="language"
+                  value={quizSettings.language}
+                  onChange={handleSettingsChange}
+                  className="language-select"
+                >
+                  <option value="javascript">JavaScript</option>
+                  <option value="python">Python</option>
+                  <option value="java">Java</option>
+                  <option value="csharp">C#</option>
+                  <option value="ruby">Ruby</option>
+                </select>
+              </div>
+              <div className="setting-item">
+                <label htmlFor="difficulty">Difficulty Level:</label>
+                <select
+                  id="difficulty"
+                  name="difficulty"
+                  value={quizSettings.difficulty}
+                  onChange={handleSettingsChange}
+                  className="language-select"
+                >
+                  <option value="easy">Easy</option>
+                  <option value="medium">Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
+              </div>
+            </div>
+            <button onClick={startQuiz} className="start-button">
+              Start Quiz
+            </button>
           </div>
-
-          <div className="navigation-buttons">
-            <button
-              onClick={handlePreviousQuestion}
-              disabled={currentQuestionIndex === 0}
-              aria-label="Previous question"
-              className="nav-btn prev-btn"
-            >
-              ← Previous
-            </button>
-            <button
-              onClick={resetQuiz}
-              className="reset-btn"
-              aria-label="Restart quiz"
-            >
-              Restart
-            </button>
-            <button
-              onClick={handleNextQuestion}
-              disabled={currentQuestionIndex + 1 >= quizQuestions.length}
-              aria-label="Next question"
-              className="nav-btn next-btn"
-            >
-              Next →
+        ) : showScore ? (
+          <div className="score-section">
+            <h2>Quiz Complete!</h2>
+            <p>
+              You scored {score} out of {questions.length}
+            </p>
+            <button onClick={handleRestart} className="restart-button">
+              Restart Quiz
             </button>
           </div>
+        ) : isLoading ? (
+          <div className="loading">Loading questions...</div>
+        ) : questions.length > 0 ? (
+          <div className="quiz-section">
+            <div className="progress-container">
+              <div
+                className="progress-bar"
+                style={{
+                  width: `${((currentQuestionIndex + 1) / questions.length) * 100}%`,
+                }}
+              ></div>
+              <span className="question-counter">
+                Question {currentQuestionIndex + 1} of {questions.length}
+              </span>
+            </div>
 
-          {currentQuestionIndex + 1 === quizQuestions.length && isOptionSelected && (
-            <div className="quiz-result" role="status">
-              <h3>Quiz Completed! 🏆</h3>
-              <p>Your Score: <strong>{correctCount}/{quizQuestions.length}</strong></p>
+            <div className="timer-container">
+              <div className={`timer ${timeLeft <= 10 ? 'timer-warning' : ''}`}>
+                Time: {formatTime(timeLeft)}
+              </div>
+            </div>
+
+            <div className="question-container">
+              <h2 className="question-text">
+                {questions[currentQuestionIndex].question}
+              </h2>
+              <div className="answer-section">
+                {questions[currentQuestionIndex].options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswerClick(option.id)}
+                    className={`answer-button ${
+                      selectedOption === option.id
+                        ? option.isCorrect
+                          ? "correct"
+                          : "incorrect"
+                        : ""
+                    } ${isAnswered ? "disabled" : ""}`}
+                    disabled={isAnswered}
+                  >
+                    {option.text}
+                  </button>
+                ))}
+              </div>
+              {timerExpired && (
+                <div className="timer-expired-message">
+                  Time's up! The correct answer was: {questions[currentQuestionIndex].options.find(opt => opt.isCorrect).text}
+                </div>
+              )}
+            </div>
+
+            <div className="navigation-buttons">
               <button
-                onClick={resetQuiz}
-                className="reset-btn"
-                aria-label="Try quiz again"
+                onClick={handlePrevious}
+                disabled={currentQuestionIndex === 0}
+                className="nav-button prev-button"
               >
-                Try Again
+                Previous
+              </button>
+              <button
+                onClick={handleNext}
+                className="nav-button next-button"
+                disabled={!isAnswered}
+              >
+                {currentQuestionIndex === questions.length - 1 ? "Finish" : "Next"}
               </button>
             </div>
-          )}
-        </div>
-      )}
+          </div>
+        ) : (
+          <div className="error-message">
+            <h2>Error Loading Questions</h2>
+            <p>Please try again with different settings.</p>
+            <button onClick={() => setShowSettings(true)} className="restart-button">
+              Back to Settings
+            </button>
+          </div>
+        )}
+      </main>
     </div>
   );
 }
