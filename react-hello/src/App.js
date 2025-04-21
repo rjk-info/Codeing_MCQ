@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import "./App.css";
-import { baseQuizData, generateQuizQuestions } from "./quizData";
 
 function debounce(func, wait) {
   let timeout;
@@ -32,12 +31,18 @@ function App() {
 
   const currentQuestion = quizQuestions[currentQuestionIndex];
 
-  const languageTagMap = {
-    javascript: "javascript",
-    python: "python",
-    java: "java",
-    csharp: "csharp",
-    ruby: "ruby",
+  // Map programming languages to Trivia API categories
+  const categoryMap = {
+    javascript: 18, // Science: Computers
+    python: 18,    // Science: Computers
+    java: 18,      // Science: Computers
+    csharp: 18,    // Science: Computers
+    ruby: 18,      // Science: Computers
+    php: 18,       // Science: Computers
+    swift: 18,     // Science: Computers
+    kotlin: 18,    // Science: Computers
+    go: 18,        // Science: Computers
+    rust: 18,      // Science: Computers
   };
 
   const difficultyMap = {
@@ -47,45 +52,23 @@ function App() {
     hard: "hard",
   };
 
-  const categoryMap = {
-    all: "",
-    algorithms: "algorithms",
-    data_structures: "data_structures",
-    databases: "databases",
-  };
-
-  const questionTypeMap = {
-    all: "",
-    multiple: "multiple",
-    true_false: "boolean",
-  };
-
-  const apiKey = process.env.REACT_APP_QUIZ_API_KEY;
-  if (!apiKey) {
-    console.error("API key is missing. Please check your .env file.");
-  }
-
   const buildApiUrl = () => {
-    const tag = languageTagMap[filters.language];
-    if (!tag) {
-      throw new Error("Selected language is not supported by the API");
-    }
-    if (!apiKey) {
-      throw new Error("API key is missing");
+    const categoryId = categoryMap[filters.language];
+    if (!categoryId) {
+      throw new Error("Selected language is not supported");
     }
     
     // Base URL with required parameters
-    let url = `https://quizapi.io/api/v1/questions?apiKey=${apiKey}&tags=${tag}&limit=${numQuestions}`;
+    let url = `https://opentdb.com/api.php?amount=${numQuestions}&category=${categoryId}`;
 
-    // Add optional parameters only if they're not set to "all"
+    // Add difficulty if selected
     if (filters.difficulty !== "all") {
       url += `&difficulty=${difficultyMap[filters.difficulty]}`;
     }
-    if (filters.category !== "all") {
-      url += `&category=${categoryMap[filters.category]}`;
-    }
+    
+    // Add type if selected
     if (filters.questionType !== "all") {
-      url += `&question_type=${questionTypeMap[filters.questionType]}`;
+      url += `&type=${filters.questionType === "multiple" ? "multiple" : "boolean"}`;
     }
     
     console.log("API URL:", url);
@@ -101,17 +84,10 @@ function App() {
     return arr;
   };
 
-  const filterDuplicates = (questions) => {
-    const seen = new Set();
-    return questions.filter((q) => {
-      const key = q.question;
-      if (seen.has(key)) {
-        return false;
-      } else {
-        seen.add(key);
-        return true;
-      }
-    });
+  const decodeHtml = (html) => {
+    const txt = document.createElement("textarea");
+    txt.innerHTML = html;
+    return txt.value;
   };
 
   const fetchQuestionsFromApi = async () => {
@@ -122,60 +98,42 @@ function App() {
       const response = await fetch(url);
       
       if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error("Invalid API key. Please check your .env file.");
-        } else if (response.status === 429) {
-          throw new Error("API rate limit exceeded. Please try again later.");
-        } else {
-          throw new Error(`API request failed with status ${response.status}`);
-        }
+        throw new Error(`API request failed with status ${response.status}`);
       }
       
       const data = await response.json();
       console.log("API Response:", data);
       
-      if (!Array.isArray(data) || data.length === 0) {
-        throw new Error(`No questions found for ${filters.language}. Try a different language or category.`);
+      if (data.response_code !== 0) {
+        throw new Error(`API Error: ${data.response_code}`);
       }
       
-      const uniqueQuestionsMap = new Map();
-      data.forEach((item) => {
-        if (!uniqueQuestionsMap.has(item.question)) {
-          uniqueQuestionsMap.set(item.question, item);
-        }
-      });
-      const uniqueQuestions = Array.from(uniqueQuestionsMap.values());
+      if (!data.results || data.results.length === 0) {
+        throw new Error(`No questions found for ${filters.language}. Try a different language or category.`);
+      }
 
-      const mappedQuestions = uniqueQuestions.map((item) => {
-        const options = [];
-        for (const key in item.answers) {
-          if (item.answers[key]) {
-            options.push({
-              id: options.length + 1,
-              text: item.answers[key],
-              isCorrect: item.correct_answers[key.replace("answer_", "correct_")] === "true",
-            });
-          }
-        }
+      const mappedQuestions = data.results.map((item, index) => {
+        const options = [
+          { id: 1, text: decodeHtml(item.correct_answer), isCorrect: true },
+          ...item.incorrect_answers.map((answer, i) => ({
+            id: i + 2,
+            text: decodeHtml(answer),
+            isCorrect: false
+          }))
+        ];
+
         return {
-          question: item.question,
+          question: decodeHtml(item.question),
           options: shuffleArray(options),
         };
       });
 
-      return filterDuplicates(mappedQuestions);
+      return mappedQuestions;
     } catch (error) {
       console.error("API Error:", error);
       setErrorMessage(error.message);
       throw error;
     }
-  };
-
-  const getLocalQuestions = () => {
-    console.log("Using local questions as fallback");
-    // Filter local questions by language if possible
-    const localQuestions = generateQuizQuestions(numQuestions, filters.language);
-    return filterDuplicates(localQuestions);
   };
 
   const fetchQuestions = async () => {
@@ -185,17 +143,16 @@ function App() {
       console.log(`Successfully fetched ${apiQuestions.length} questions from API`);
       
       if (apiQuestions.length === 0) {
-        console.log("No questions returned from API, using local questions");
         setEmptyState(true);
-        return getLocalQuestions();
+        throw new Error(`No questions found for ${filters.language}. Try a different language or category.`);
       }
       
       setEmptyState(false);
       return apiQuestions;
     } catch (error) {
-      console.error("Error fetching from API, using local questions:", error);
+      console.error("Error fetching from API:", error);
       setEmptyState(true);
-      return getLocalQuestions();
+      throw error;
     }
   };
 
@@ -204,7 +161,6 @@ function App() {
     setIsLoading(true);
     setErrorMessage("");
     
-    // Directly call fetchQuestions instead of using debounced version
     fetchQuestions()
       .then(questions => {
         if (questions.length === 0) {
@@ -222,7 +178,7 @@ function App() {
       })
       .catch(error => {
         console.error("Error in handleStartQuiz:", error);
-        setErrorMessage("Error fetching questions. Please try again.");
+        setErrorMessage(error.message);
         setQuizStarted(false);
       })
       .finally(() => {
@@ -379,23 +335,6 @@ function App() {
                 <option value="easy">Easy</option>
                 <option value="medium">Medium</option>
                 <option value="hard">Hard</option>
-              </select>
-            </div>
-            
-            <div className="input-group">
-              <label htmlFor="categorySelect">Select Category:</label>
-              <select
-                id="categorySelect"
-                value={filters.category}
-                onChange={(e) => handleFilterChange("category", e.target.value)}
-                aria-label="Select category"
-                className="category-dropdown"
-                disabled={isLoading}
-              >
-                <option value="all">All</option>
-                <option value="algorithms">Algorithms</option>
-                <option value="data_structures">Data Structures</option>
-                <option value="databases">Databases</option>
               </select>
             </div>
             
