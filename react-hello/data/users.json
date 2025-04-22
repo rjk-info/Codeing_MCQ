@@ -1,0 +1,92 @@
+[
+  {
+    "id": "1745333198827",
+    "username": "ranjeetkumar763124@gmail.com",
+    "password": "$2a$10$MM0uPUOIJ7/T4kINB0y2sOnsWmjWEBIyj7woLrlRjKiRYY58fC7wq",
+    "name": "ranjeetkr0023",
+    "role": "admin",
+    "createdAt": "2025-04-22T14:46:38.828Z"
+  },
+  {
+    "id": "1745333620394",
+    "username": "the@12",
+    "password": "$2a$10$MWGGtBdw8j0cLzcBex2rjuOUlTLhIaIWujLmuyW6A0IWbrAuVBCeK",
+    "name": "raju",
+    "createdAt": "2025-04-22T14:53:40.395Z"
+  },
+  {
+    "id": "1745334066174",
+    "username": "Ranjeet#1",
+    "password": "$2a$10$YQvJGfbQGrRxPjCE7FHBkOXuIrjeFX8kxX0LRUBj1oqbYFe4D2Aqm",
+    "name": "Ranjeet Admin",
+    "role": "admin",
+    "createdAt": "2025-04-22T15:01:06.174Z"
+  },
+  {
+    "id": "1745334145507",
+    "username": "aman@12",
+    "password": "$2a$10$LYgR3B48H82n.cwu9bWruetSyK5LtsEE4WbmrFYQgfcpJiDmvtNU.",
+    "name": "aman",
+    "createdAt": "2025-04-22T15:02:25.507Z"
+  },
+  {
+    "id": "1745336699388",
+    "username": "rajesh#11",
+    "password": "$2a$10$JIMqoOqIHUeD18nzF96e/u4AiXffudJxh4U7U3lGNlGwEKcafCLMq",
+    "name": "rajesh",
+    "createdAt": "2025-04-22T15:44:59.388Z"
+  },
+  {
+    "id": "1745337277033",
+    "username": "raju@1",
+    "password": "$2a$10$HSr0avbpKSrL7wwhCjzoWOwbxLlU1BTFfDIUVY/gFfs1afWkR01rK",
+    "name": "raju",
+    "createdAt": "2025-04-22T15:54:37.033Z"
+  },
+  {
+    "id": "1745338947441",
+    "username": "rjk@11",
+    "password": "$2a$10$PRwiT.Jgz5FVO9C8iMqBy.Xvew4KrhWIZg50bD4qb.H9woCjHPPOe",
+    "name": "rjk",
+    "createdAt": "2025-04-22T16:22:27.441Z"
+  },
+  {
+    "id": "1745340144884",
+    "username": "jasu@23",
+    "password": "$2a$10$K7seloc0.hPjDvYKAZGTz.QtIbPavDfBUmG2aH5nlZlJd.Xo6UfVu",
+    "name": "jasu",
+    "createdAt": "2025-04-22T16:42:24.885Z",
+    "quizHistory": [
+      {
+        "language": "csharp",
+        "score": 1,
+        "totalQuestions": 50,
+        "date": "2025-04-22T17:01:28.142Z"
+      },
+      {
+        "language": "javascript",
+        "score": 1,
+        "totalQuestions": 5,
+        "date": "2025-04-22T17:05:15.975Z"
+      },
+      {
+        "language": "php",
+        "score": 6,
+        "totalQuestions": 50,
+        "date": "2025-04-22T17:06:29.459Z"
+      },
+      {
+        "language": "java",
+        "score": 4,
+        "totalQuestions": 10,
+        "date": "2025-04-22T17:07:23.971Z"
+      },
+      {
+        "language": "rust",
+        "score": 0,
+        "totalQuestions": 30,
+        "date": "2025-04-22T17:07:53.924Z"
+      }
+    ]
+  }
+]
