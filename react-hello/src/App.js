@@ -265,7 +265,7 @@ function App() {
                 <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
-            <h1>🚀 Coding Quiz 💻</h1>
+            <h1>🚀 Coding Master 💻</h1>
           </div>
           <div className="user-info">
             <span>Welcome, {user.username} 👋</span>
@@ -377,110 +377,49 @@ function App() {
                 </div>
 
                 <div className="timer-container">
-                  <div className={`timer ${timeLeft <= 10 ? 'timer-warning' : ''}`}>
-                    ⏱️ Time: {formatTime(timeLeft)}
+                  <div className={`timer ${timerExpired ? 'expired' : ''}`}>
+                    <span>{formatTime(timeLeft)}</span>
                   </div>
                 </div>
 
-                <div className="question-container">
-                  <h2 className="question-text">
-                    {questions[currentQuestionIndex].question}
-                  </h2>
-                  <div className="answer-section">
+                <div className="question-section">
+                  <h3>{questions[currentQuestionIndex].question}</h3>
+                  <ul className="options-list">
                     {questions[currentQuestionIndex].options.map((option) => (
-                      <button
+                      <li
                         key={option.id}
-                        onClick={() => handleAnswerClick(option.id)}
-                        className={`answer-button ${
+                        className={`option ${
                           selectedOption === option.id
                             ? option.isCorrect
                               ? "correct"
                               : "incorrect"
                             : ""
-                        } ${isAnswered ? "disabled" : ""}`}
-                        disabled={isAnswered}
+                        } ${
+                          isAnswered && option.isCorrect && selectedOption !== option.id
+                            ? "correct"
+                            : ""
+                        }`}
+                        onClick={() => handleAnswerClick(option.id)}
                       >
                         {option.text}
-                      </button>
+                      </li>
                     ))}
-                  </div>
-                  {timerExpired && (
-                    <div className="timer-expired-message">
-                      ⚠️ Time's up! The correct answer was: {questions[currentQuestionIndex].options.find(opt => opt.isCorrect).text}
-                    </div>
-                  )}
+                  </ul>
                 </div>
 
                 <div className="navigation-buttons">
-                  <button
-                    onClick={handlePrevious}
-                    disabled={currentQuestionIndex === 0}
-                    className="nav-button prev-button"
-                  >
-                    ⬅️ Previous
+                  <button onClick={handlePrevious} disabled={currentQuestionIndex === 0}>
+                    Previous
                   </button>
-                  <button
-                    onClick={handleSkip}
-                    className="nav-button skip-button"
-                    disabled={isAnswered}
-                  >
-                    ⏭️ Skip
+                  <button onClick={handleSkip}>Skip</button>
+                  <button onClick={handleNext} disabled={currentQuestionIndex === questions.length - 1}>
+                    Next
                   </button>
-                  <button
-                    onClick={handleNext}
-                    className="nav-button next-button"
-                    disabled={!isAnswered}
-                  >
-                    {currentQuestionIndex === questions.length - 1 ? "✅ Finish" : "Next ➡️"}
-                  </button>
-                  <button
-                    onClick={() => setShowScore(true)}
-                    className="nav-button submit-button"
-                    disabled={!isAnswered}
-                  >
-                    📊 Submit
-                  </button>
-                  <button
-                    onClick={handleRestart}
-                    className="nav-button restart-button"
-                  >
-                    🔄 Restart
-                  </button>
-                </div>
-              </div>
-              <div className="question-dashboard">
-                <h3>Question Dashboard 📋</h3>
-                <div className="dashboard-grid">
-                  {questions.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => {
-                        setCurrentQuestionIndex(index);
-                        setSelectedOption(null);
-                        setIsAnswered(answeredQuestions.has(index));
-                      }}
-                      className={`dashboard-item ${
-                        currentQuestionIndex === index ? 'active' : ''
-                      } ${answeredQuestions.has(index) ? 'answered' : ''} ${
-                        skippedQuestions.has(index) ? 'skipped' : ''
-                      }`}
-                    >
-                      {index + 1}
-                    </button>
-                  ))}
                 </div>
               </div>
             </div>
           </div>
-        ) : (
-          <div className="error-message">
-            <h2>❌ Error Loading Questions</h2>
-            <p>Please try again with different settings.</p>
-            <button onClick={() => setShowSettings(true)} className="restart-button">
-              Back to Settings 🔙
-            </button>
-          </div>
-        )}
+        ) : null}
       </main>
     </div>
   );

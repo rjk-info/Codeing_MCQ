@@ -56,7 +56,7 @@ const Login = ({ onAuth }) => {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h2>Login to Coding Quiz</h2>
+        <h2>Login to Coding Master</h2>
         {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleSubmit} autoComplete="off">
           <div className="form-group">

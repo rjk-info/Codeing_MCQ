@@ -49,7 +49,7 @@ const Register = ({ onAuth }) => {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h2>Register for Coding Quiz</h2>
+        <h2>Register for Coding Master</h2>
         {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleSubmit} autoComplete="off">
           <div className="form-group">
