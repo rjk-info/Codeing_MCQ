@@ -46,5 +46,10 @@ module.exports = {
       systemvars: true,
       safe: true
     })
-  ]
+  ],
+  homepage: "https://rjk-info.github.io/Codeing_MCQ",
+  scripts: {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
+  }
 };
