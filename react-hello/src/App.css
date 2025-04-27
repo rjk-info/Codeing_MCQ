@@ -468,9 +468,8 @@ body {
 }
 
 .quiz-content {
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
-  max-width: calc(100% - 220px);
   overflow-y: auto;
   padding-right: 10px;
 }
@@ -530,10 +529,50 @@ body {
 }
 
 .nav-button {
-  padding: 0.6rem 1rem;
-  font-size: 0.85rem;
-  min-width: 90px;
-  border-radius: 6px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  min-width: 110px;
+  border-radius: 8px;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  text-align: center;
+  user-select: none;
+}
+
+.nav-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.prev-button {
+  background-color: #6c757d;
+}
+
+.next-button {
+  background-color: #007bff;
+}
+
+.skip-button {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.submit-button {
+  background-color: #28a745;
+}
+
+.restart-button {
+  background-color: #dc3545;
+}
+
+.nav-button:hover:not(:disabled) {
+  filter: brightness(1.1);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
 }
 
 .question-dashboard {

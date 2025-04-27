@@ -100,6 +100,8 @@ function App() {
       setTimeLeft(20); // Changed from 60 to 20 seconds
       setTimerActive(true);
       setTimerExpired(false);
+      setIsAnswered(false);
+      setSelectedOption(null);
     }
   }, [currentQuestionIndex, showSettings, showScore]);
 
@@ -119,7 +121,7 @@ function App() {
   const loadQuestions = () => {
     setIsLoading(true);
     try {
-      const selectedQuestions = getQuestionsForLanguage(
+      let selectedQuestions = getQuestionsForLanguage(
         quizSettings.language,
         quizSettings.difficulty,
         quizSettings.numberOfQuestions
@@ -132,6 +134,12 @@ function App() {
       if (selectedQuestions.length < quizSettings.numberOfQuestions) {
         console.warn(`Only ${selectedQuestions.length} questions available for ${quizSettings.language} at ${quizSettings.difficulty} difficulty`);
       }
+
+      // Deep clone questions to avoid shared references
+      selectedQuestions = selectedQuestions.map(q => ({
+        ...q,
+        options: q.options.map(opt => ({ ...opt }))
+      }));
 
       setQuestions(selectedQuestions);
       setCurrentQuestionIndex(0);
@@ -348,22 +356,22 @@ function App() {
               Start Quiz 🚀
             </button>
           </div>
-        ) : showScore ? (
+          ) : showScore ? (
           <div className="score-section">
             <h2>Quiz Complete! 🎉</h2>
             <p>
               You scored {score} out of {questions.length} questions correctly! 🏆
             </p>
-            <button onClick={handleRestart} className="restart-button">
-              Try Again 🔄
+            <button onClick={handleRestart} className="restart-button nav-button restart-button">
+              Restart 🔄
             </button>
           </div>
-        ) : isLoading ? (
+          ) : isLoading ? (
           <div className="loading">Loading questions... ⏳</div>
         ) : questions.length > 0 ? (
           <div className="quiz-section">
-            <div className="quiz-layout">
-              <div className="quiz-content">
+            <div className="quiz-layout" style={{ display: 'flex', flexDirection: 'row' }}>
+              <div className="quiz-content" style={{ flex: 3, paddingRight: '20px' }}>
                 <div className="progress-container">
                   <div
                     className="progress-bar"
@@ -388,11 +396,11 @@ function App() {
                     {questions[currentQuestionIndex].options.map((option) => (
                       <li
                         key={option.id}
-                        className={`option ${
+                        className={`quiz-option ${
                           selectedOption === option.id
                             ? option.isCorrect
                               ? "correct"
-                              : "incorrect"
+                              : "wrong"
                             : ""
                         } ${
                           isAnswered && option.isCorrect && selectedOption !== option.id
@@ -408,13 +416,66 @@ function App() {
                 </div>
 
                 <div className="navigation-buttons">
-                  <button onClick={handlePrevious} disabled={currentQuestionIndex === 0}>
+                  <button onClick={handlePrevious} disabled={currentQuestionIndex === 0} className="prev-button nav-button">
                     Previous
                   </button>
-                  <button onClick={handleSkip}>Skip</button>
-                  <button onClick={handleNext} disabled={currentQuestionIndex === questions.length - 1}>
+                  <button onClick={handleSkip} className="skip-button nav-button">Skip</button>
+                  <button onClick={handleNext} disabled={currentQuestionIndex === questions.length - 1} className="next-button nav-button">
                     Next
                   </button>
+                  <button onClick={() => setShowScore(true)} className="submit-button nav-button">
+                    Submit Test
+                  </button>
+                  <button onClick={handleRestart} className="restart-button nav-button">
+                    Restart
+                  </button>
+                </div>
+              </div>
+              <div className="question-dashboard" style={{ flex: 1, borderLeft: '1px solid #ccc', paddingLeft: '10px', maxHeight: '600px', overflowY: 'auto' }}>
+                <h3>Question Dashboard</h3>
+                <ul style={{ listStyleType: 'none', padding: 0, display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {questions.map((q, index) => {
+                    const isCurrent = index === currentQuestionIndex;
+                    const isAnsweredQ = answeredQuestions.has(index);
+                    const isSkippedQ = skippedQuestions.has(index);
+                    let bgColor = '#f0f0f0'; // default unvisited
+                    if (isCurrent) {
+                      bgColor = '#4caf50'; // green for current
+                    } else if (isAnsweredQ) {
+                      bgColor = '#2196f3'; // blue for answered
+                    } else if (isSkippedQ) {
+                      bgColor = '#ff9800'; // orange for skipped
+                    }
+                    return (
+                      <li
+                        key={index}
+                        onClick={() => setCurrentQuestionIndex(index)}
+                        style={{
+                          cursor: 'pointer',
+                          backgroundColor: bgColor,
+                          color: 'white',
+                          width: '40px',
+                          height: '40px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderRadius: '6px',
+                          fontWeight: isCurrent ? 'bold' : 'normal',
+                          userSelect: 'none',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                        }}
+                        title={q.question}
+                      >
+                        {`Q${index + 1}`}
+                      </li>
+                    );
+                  })}
+                </ul>
+                <div style={{ fontSize: '12px', marginTop: '10px' }}>
+                  <div><span style={{ backgroundColor: '#4caf50', padding: '2px 6px', borderRadius: '3px' }}></span> Current Question</div>
+                  <div><span style={{ backgroundColor: '#2196f3', padding: '2px 6px', borderRadius: '3px' }}></span> Answered</div>
+                  <div><span style={{ backgroundColor: '#ff9800', padding: '2px 6px', borderRadius: '3px' }}></span> Skipped</div>
+                  <div><span style={{ backgroundColor: '#f0f0f0', padding: '2px 6px', borderRadius: '3px', border: '1px solid #ccc' }}></span> Not Visited</div>
                 </div>
               </div>
             </div>

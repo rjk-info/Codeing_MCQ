@@ -122,6 +122,187 @@
         "score": 0,
         "totalQuestions": 15,
         "date": "2025-04-23T09:11:24.917Z"
+      },
+      {
+        "language": "javascript",
+        "score": 1,
+        "totalQuestions": 5,
+        "date": "2025-04-27T14:26:59.908Z"
+      },
+      {
+        "language": "javascript",
+        "score": 0,
+        "totalQuestions": 5,
+        "date": "2025-04-27T14:29:00.472Z"
+      },
+      {
+        "language": "javascript",
+        "score": 0,
+        "totalQuestions": 5,
+        "date": "2025-04-27T14:29:41.040Z"
+      },
+      {
+        "language": "csharp",
+        "score": 2,
+        "totalQuestions": 50,
+        "date": "2025-04-27T14:30:19.917Z"
+      },
+      {
+        "language": "javascript",
+        "score": 3,
+        "totalQuestions": 5,
+        "date": "2025-04-27T14:32:46.760Z"
+      },
+      {
+        "language": "javascript",
+        "score": 0,
+        "totalQuestions": 5,
+        "date": "2025-04-27T14:36:33.134Z"
+      },
+      {
+        "language": "javascript",
+        "score": 1,
+        "totalQuestions": 20,
+        "date": "2025-04-27T14:39:22.772Z"
+      },
+      {
+        "language": "swift",
+        "score": 1,
+        "totalQuestions": 50,
+        "date": "2025-04-27T14:39:53.979Z"
+      },
+      {
+        "language": "go",
+        "score": 0,
+        "totalQuestions": 25,
+        "date": "2025-04-27T15:07:10.438Z"
+      },
+      {
+        "language": "javascript",
+        "score": 0,
+        "totalQuestions": 5,
+        "date": "2025-04-27T15:12:12.450Z"
+      },
+      {
+        "language": "python",
+        "score": 3,
+        "totalQuestions": 10,
+        "date": "2025-04-27T15:12:57.880Z"
+      },
+      {
+        "language": "javascript",
+        "score": 1,
+        "totalQuestions": 5,
+        "date": "2025-04-27T15:18:58.844Z"
+      },
+      {
+        "language": "java",
+        "score": 0,
+        "totalQuestions": 5,
+        "date": "2025-04-27T15:23:51.482Z"
+      },
+      {
+        "language": "java",
+        "score": 0,
+        "totalQuestions": 5,
+        "date": "2025-04-27T15:24:05.656Z"
+      },
+      {
+        "language": "java",
+        "score": 0,
+        "totalQuestions": 5,
+        "date": "2025-04-27T15:24:05.669Z"
+      },
+      {
+        "language": "javascript",
+        "score": 1,
+        "totalQuestions": 5,
+        "date": "2025-04-27T15:24:41.424Z"
+      },
+      {
+        "language": "javascript",
+        "score": 2,
+        "totalQuestions": 5,
+        "date": "2025-04-27T15:27:57.378Z"
+      },
+      {
+        "language": "javascript",
+        "score": 1,
+        "totalQuestions": 5,
+        "date": "2025-04-27T15:31:35.239Z"
+      },
+      {
+        "language": "python",
+        "score": 0,
+        "totalQuestions": 5,
+        "date": "2025-04-27T15:34:50.143Z"
+      },
+      {
+        "language": "java",
+        "score": 0,
+        "totalQuestions": 5,
+        "date": "2025-04-27T15:35:43.070Z"
+      },
+      {
+        "language": "java",
+        "score": 0,
+        "totalQuestions": 5,
+        "date": "2025-04-27T15:37:11.691Z"
+      },
+      {
+        "language": "javascript",
+        "score": 3,
+        "totalQuestions": 50,
+        "date": "2025-04-27T15:44:37.994Z"
+      },
+      {
+        "language": "javascript",
+        "score": 0,
+        "totalQuestions": 20,
+        "date": "2025-04-27T15:49:41.777Z"
+      }
+    ]
+  },
+  {
+    "id": "1745484307056",
+    "username": "meena@1",
+    "password": "$2a$10$d3xLbWWmka2J5aZ2e/dfTuD67.HRjAhIWc3gG57tYYTkV5XvS9dCy",
+    "name": "meena",
+    "createdAt": "2025-04-24T08:45:07.056Z",
+    "quizHistory": [
+      {
+        "language": "python",
+        "score": 0,
+        "totalQuestions": 10,
+        "date": "2025-04-24T08:45:55.524Z"
+      }
+    ]
+  },
+  {
+    "id": "1745685405184",
+    "username": "Ranj@1",
+    "password": "$2a$10$eEzJ5z8Wih/8AYwgV3OBNufGNouRuguijJSwERGJnQLwEoF38byki",
+    "name": "raju",
+    "createdAt": "2025-04-26T16:36:45.184Z"
+  },
+  {
+    "id": "1745769042511",
+    "username": "amang@1",
+    "password": "$2a$10$6dMFYWapSnBCa5bJGfMhh.nSgNfN5jrMDQ8akpCXzcdg4s1N6wqHC",
+    "name": "aman",
+    "createdAt": "2025-04-27T15:50:42.511Z",
+    "quizHistory": [
+      {
+        "language": "javascript",
+        "score": 0,
+        "totalQuestions": 5,
+        "date": "2025-04-27T15:50:50.301Z"
+      },
+      {
+        "language": "javascript",
+        "score": 2,
+        "totalQuestions": 5,
+        "date": "2025-04-27T15:51:19.793Z"
       }
     ]
   }

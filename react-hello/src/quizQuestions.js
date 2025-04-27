@@ -348,6 +348,24 @@ function generateQuestionsForLanguage(language, totalQuestions) {
         { text: "let x = 10;", isCorrect: true },
         { text: "variable x = 10;", isCorrect: false },
         { text: "x = 10;", isCorrect: false }
+      ],
+      "What is a closure in JavaScript?": [
+        { text: "A function having access to its outer scope", isCorrect: true },
+        { text: "A function with no parameters", isCorrect: false },
+        { text: "A function that returns a value", isCorrect: false },
+        { text: "A function that calls itself", isCorrect: false }
+      ],
+      "What is the difference between let and const?": [
+        { text: "let allows reassignment, const does not", isCorrect: true },
+        { text: "const allows reassignment, let does not", isCorrect: false },
+        { text: "Both allow reassignment", isCorrect: false },
+        { text: "Neither allow reassignment", isCorrect: false }
+      ],
+      "What is the event loop in JavaScript?": [
+        { text: "A mechanism to handle asynchronous callbacks", isCorrect: true },
+        { text: "A loop that runs forever", isCorrect: false },
+        { text: "A function that executes immediately", isCorrect: false },
+        { text: "A method to iterate over arrays", isCorrect: false }
       ]
     },
     python: {
@@ -362,9 +380,58 @@ function generateQuestionsForLanguage(language, totalQuestions) {
         { text: "//", isCorrect: true },
         { text: "%", isCorrect: false },
         { text: "|", isCorrect: false }
+      ],
+      "What is the difference between a list and a set?": [
+        { text: "List is ordered, set is unordered", isCorrect: true },
+        { text: "List is immutable, set is mutable", isCorrect: false },
+        { text: "List stores unique elements, set allows duplicates", isCorrect: false },
+        { text: "List is a type of set", isCorrect: false }
+      ],
+      "What is the purpose of the __init__ method?": [
+        { text: "To initialize an object's attributes", isCorrect: true },
+        { text: "To delete an object", isCorrect: false },
+        { text: "To define a class method", isCorrect: false },
+        { text: "To create a module", isCorrect: false }
+      ]
+    },
+    java: {
+      "What is the difference between an abstract class and an interface?": [
+        { text: "Abstract class can have method implementations, interface cannot", isCorrect: true },
+        { text: "Interface can have method implementations, abstract class cannot", isCorrect: false },
+        { text: "Both are the same", isCorrect: false },
+        { text: "Neither can have method implementations", isCorrect: false }
+      ],
+      "What is the purpose of the final keyword?": [
+        { text: "To prevent inheritance", isCorrect: true },
+        { text: "To allow inheritance", isCorrect: false },
+        { text: "To declare a constant variable", isCorrect: false },
+        { text: "To define a method", isCorrect: false }
+      ],
+      "What is the difference between HashMap and HashTable?": [
+        { text: "HashMap is unsynchronized, HashTable is synchronized", isCorrect: true },
+        { text: "HashMap is synchronized, HashTable is unsynchronized", isCorrect: false },
+        { text: "Both are synchronized", isCorrect: false },
+        { text: "Both are unsynchronized", isCorrect: false }
+      ],
+      "What is a constructor in Java?": [
+        { text: "A special method to initialize objects", isCorrect: true },
+        { text: "A method to destroy objects", isCorrect: false },
+        { text: "A variable", isCorrect: false },
+        { text: "A class", isCorrect: false }
+      ],
+      "What is the purpose of the synchronized keyword?": [
+        { text: "To control access to a method or block by multiple threads", isCorrect: true },
+        { text: "To allow multiple threads to access a method simultaneously", isCorrect: false },
+        { text: "To define a constant variable", isCorrect: false },
+        { text: "To declare a static method", isCorrect: false }
+      ],
+      "What is the purpose of the continue statement?": [
+        { text: "To skip the current iteration and continue with the next", isCorrect: true },
+        { text: "To exit the loop immediately", isCorrect: false },
+        { text: "To restart the loop from the beginning", isCorrect: false },
+        { text: "To pause the loop execution", isCorrect: false }
       ]
     }
-    // Add more language-specific options for other languages...
   };
   
   // Generate 1000 questions for each language
