@@ -303,7 +303,20 @@
         "score": 2,
         "totalQuestions": 5,
         "date": "2025-04-27T15:51:19.793Z"
+      },
+      {
+        "language": "javascript",
+        "score": 2,
+        "totalQuestions": 20,
+        "date": "2025-04-29T05:15:38.846Z"
       }
     ]
+  },
+  {
+    "id": "1745903181405",
+    "username": "Ranjeetk@1",
+    "password": "$2a$10$t42DdIF9DcWeV5nSXvnNUuLNGAaDIyNYzdAMpust8P2sR8Etb7Cpe",
+    "name": "Ranjeet1",
+    "createdAt": "2025-04-29T05:06:21.405Z"
   }
 ]
